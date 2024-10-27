@@ -21,7 +21,7 @@
 	border-radius: 5px;
 }
 
-.slInjected.slPrompt.slPromptShow {
+.slInjected.slPrompt.slShowPrompt {
 	pointer-events: all;
 	opacity: 1;
 	cursor: pointer;
@@ -44,9 +44,13 @@
 	color: var(--text-idle-color);
 	text-align: center;
 	vertical-align: middle;
-	transition: color 0.4s;
+	transition: color 0.4s, transform 0.3s ease-out;
 }
 
 .slInjected.slPromptButton.slPromptButtonText:hover {
 	color: var(--text-active-color);
+}
+
+.slInjected.slPromptButton.slCancelButton.slPromptButtonText {
+	transform: rotate(45deg);
 }

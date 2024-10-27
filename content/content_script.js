@@ -1,22 +1,34 @@
-const prompter = document.createElement("div");
-prompter.classList.add("slInjected", "slPrompt");
+/**
+ * @type {HTMLDivElement}
+ */
+let prompter;
+/**
+ * @type {HTMLButtonElement}
+ */
+let promptButton;
+/**
+ * @type {HTMLParagraphElement}
+ */
+let promptButtonText;
 
-const promptButton = document.createElement("button");
-promptButton.classList.add("slInjected", "slPromptButton");
+/**
+ * @type {AbortController}
+ */
+let promptButtonAbort;
+let isButtonCancellation = false;
 
-const promptButtonText = document.createElement("p");
-promptButton.classList.add("slInjected", "slPromptButtonText");
-promptButtonText.innerText = "+";
-
-promptButton.append(promptButtonText);
-prompter.append(promptButton);
-document.body.append(prompter);
-
-//MO TODO check if this works on mobile
-//MO TODO change button icon depending on context
-//MO TODO "+" if not yet clicked else "x" for abort
+buildPrompt();
 document.addEventListener("selectionchange", async () => {
-	await showPrompt();
+	if (promptButtonAbort && !promptButtonAbort.signal.aborted) promptButtonAbort.abort();
+	resetPrompt();
+
+	const selection = window.getSelection();
+	await showPrompt(selection);
+
+	promptButtonAbort = new AbortController();
+	promptButton.addEventListener("click", () => onPromptButtonClick(selection), {
+		signal: promptButtonAbort.signal,
+	});
 
 	// chrome.runtime.sendMessage(null, {
 	// 	event: "selectionChange",
@@ -24,13 +36,31 @@ document.addEventListener("selectionchange", async () => {
 	// });
 });
 
-async function showPrompt() {
-	const selection = window.getSelection();
+function buildPrompt() {
+	prompter = document.createElement("div");
+	prompter.classList.add("slInjected", "slPrompt");
+
+	promptButton = document.createElement("button");
+	promptButton.classList.add("slInjected", "slPromptButton");
+
+	promptButtonText = document.createElement("p");
+	promptButton.classList.add("slInjected", "slPromptButtonText");
+	promptButtonText.innerText = "+";
+
+	promptButton.append(promptButtonText);
+	prompter.append(promptButton);
+	document.body.append(prompter);
+}
+
+/**
+ * @param {Selection | null} selection
+ */
+async function showPrompt(selection) {
 	if (!selection || selection.isCollapsed) {
-		prompter.classList.remove("slPromptShow");
+		prompter.classList.remove("slShowPrompt");
 		return;
 	}
-	prompter.classList.add("slPromptShow");
+	prompter.classList.add("slShowPrompt");
 
 	const focusNode = selection.focusNode;
 	const focusOffset = selection.focusOffset;
@@ -75,4 +105,24 @@ async function showPrompt() {
 	const offsetY = buttonOnTop ? -addButtonRect.height - 20 : 50;
 
 	prompter.style.translate = `${baseX}px ${baseY + offsetY}px`;
+}
+
+function resetPrompt() {
+	prompter.classList.remove("slShowPrompt");
+	promptButton.classList.remove("slCancelButton");
+}
+
+/**
+ * @param {Selection | null} selection
+ */
+function onPromptButtonClick(selection) {
+	if (isButtonCancellation) {
+		isButtonCancellation = false;
+		promptButtonAbort.abort();
+		selection.empty();
+		resetPrompt();
+		return;
+	}
+	isButtonCancellation = true;
+	promptButton.classList.add("slCancelButton");
 }
