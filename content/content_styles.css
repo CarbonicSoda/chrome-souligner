@@ -6,7 +6,7 @@
 }
 
 .slInjected.slPrompt {
-	all: unset;
+	all: initial;
 	pointer-events: none;
 	box-shadow: 3px 3px var(--shadow-color);
 	position: absolute;
@@ -28,7 +28,7 @@
 }
 
 .slInjected.slPromptButton {
-	all: unset;
+	all: initial;
 	display: flex;
 	justify-content: center;
 	align-items: baseline;
@@ -39,12 +39,12 @@
 .slInjected.slPromptButton.slPromptButtonText {
 	height: 100%;
 	margin: 0;
-	font-size: 35px;
-	line-height: 95%;
+	transition: color 0.4s, transform 0.3s ease-out;
+	font: normal normal 35px Georgia;
+	line-height: 98%;
 	color: var(--text-idle-color);
 	text-align: center;
 	vertical-align: middle;
-	transition: color 0.4s, transform 0.3s ease-out;
 }
 
 .slInjected.slPromptButton.slPromptButtonText:hover {
