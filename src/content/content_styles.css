@@ -1,15 +1,25 @@
+:root {
+	--sl-bg: #eff1f5;
+	--sl-shadow: rgba(124, 127, 147, 0.3);
+	--sl-text-idle: #8c8fa1;
+	--sl-text-active: #4c4f69;
+	--sl-prompt-x: 0;
+	--sl-prompt-y: 0;
+	--sl-prompt-button-rot: 0;
+}
+
+.no-transition {
+	transition: none !important;
+}
+
 .sl-injected {
 	all: initial;
-
-	--bg-color: #eff1f5;
-	--shadow-color: rgba(124, 127, 147, 0.3);
-	--text-idle-color: #8c8fa1;
-	--text-active-color: #4c4f69;
 }
 
 .sl-injected.sl-prompt {
 	pointer-events: none;
-	box-shadow: 3px 3px var(--shadow-color);
+	box-shadow: 3px 3px var(--sl-shadow);
+	translate: var(--sl-prompt-x) var(--sl-prompt-y);
 	position: absolute;
 	z-index: 9999;
 	top: 0;
@@ -17,8 +27,8 @@
 	opacity: 0;
 	width: 40px;
 	height: 40px;
-	transition: translate 0.2s ease-out, opacity 0.3s ease-in;
-	background-color: var(--bg-color);
+	transition: translate 0.2s ease-out, opacity 0.3s ease-out;
+	background-color: var(--sl-bg);
 	border-radius: 5px;
 }
 
@@ -37,20 +47,17 @@
 }
 
 .sl-injected.sl-prompt-button-text {
+	transform: rotate(var(--sl-prompt-button-rot));
 	height: 100%;
 	margin: 0;
 	transition: color 0.4s, transform 0.3s ease-out;
 	font: normal normal 35px Georgia;
 	line-height: 98%;
-	color: var(--text-idle-color);
+	color: var(--sl-text-idle);
 	text-align: center;
 	vertical-align: middle;
 }
 
 .sl-injected.sl-prompt-button-text:hover {
-	color: var(--text-active-color);
-}
-
-.sl-injected.sl-prompt-button-text.sl-prompt-button-for-cancellation {
-	transform: rotate(45deg);
+	color: var(--sl-text-active);
 }
