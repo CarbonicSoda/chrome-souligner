@@ -47,7 +47,7 @@ function setSLVariable(varName: string, value: any): void {
 
 function elementInViewport(element: Element): boolean {
 	const rect = element.getBoundingClientRect();
-	return rect.top >= 0 && rect.left >= 0 && rect.bottom <= window.innerHeight && rect.right <= window.innerWidth;
+	return rect.right >= 0 && rect.bottom >= 0 && rect.left <= window.innerWidth && rect.top <= window.innerHeight;
 }
 
 function buildPrompter(): void {
@@ -66,6 +66,8 @@ function resetPrompter(): void {
 
 async function showPrompter(selection: Selection | null): Promise<
 	| {
+			x: number;
+			y: number;
 			onRight: boolean;
 			onTop: boolean;
 	  }
@@ -80,23 +82,23 @@ async function showPrompter(selection: Selection | null): Promise<
 	const focusNode = selection.focusNode;
 	const focusOffset = selection.focusOffset;
 
-	let baseX, baseY;
+	let x, y;
 	if (selection.containsNode(focusNode)) {
 		const focus = document.createRange();
 		focus.setStart(focusNode, focusOffset);
 		focus.setEnd(focusNode, focusOffset);
 		const focusRect = focus.getBoundingClientRect();
 
-		baseX = window.scrollX + focusRect.left;
-		baseY = window.scrollY + focusRect.top;
+		x = window.scrollX + focusRect.left;
+		y = window.scrollY + focusRect.top;
 	} else {
 		const mouseEv: MouseEvent = await new Promise((res) =>
 			document.addEventListener("mousemove", res, {
 				once: true,
 			}),
 		);
-		baseX = mouseEv.pageX;
-		baseY = mouseEv.pageY;
+		x = mouseEv.pageX;
+		y = mouseEv.pageY;
 	}
 
 	const anchorNode = selection.anchorNode;
@@ -112,16 +114,30 @@ async function showPrompter(selection: Selection | null): Promise<
 	} else {
 		anchorY = 9e9;
 	}
-	const addButtonRect = prompter.getBoundingClientRect();
+	const buttonOnRight = x > window.innerWidth / 2;
+	const buttonOnTop = y < anchorY;
 
-	const buttonOnRight = baseX > window.innerWidth / 2;
-	const buttonOnTop = baseY < anchorY;
+	const promptButtonRect = promptButton.getBoundingClientRect();
+	y += buttonOnTop ? -promptButtonRect.height - 20 : 50;
 
-	const offsetY = buttonOnTop ? -addButtonRect.height - 20 : 50;
-	setSLVariable("prompt-x", `${baseX}px`);
-	setSLVariable("prompt-y", `${baseY + offsetY}px`);
+	const marginX = window.innerWidth * 0.15;
+	const marginY = window.innerHeight * 0.15;
+	const leftBound = window.scrollX + marginX;
+	const rightBound = window.scrollX + window.innerWidth - marginX;
+	const bottomBound = window.scrollY + window.innerHeight - marginY;
+	const topBound = window.scrollY + marginY;
+
+	if (x < leftBound) x = leftBound;
+	if (x > rightBound) x = rightBound;
+	if (y > bottomBound) y = bottomBound;
+	if (y < topBound) y = topBound;
+
+	setSLVariable("prompt-x", `${x}px`);
+	setSLVariable("prompt-y", `${y}px`);
 
 	return {
+		x: x,
+		y: y,
 		onRight: buttonOnRight,
 		onTop: buttonOnTop,
 	};
@@ -130,6 +146,8 @@ async function showPrompter(selection: Selection | null): Promise<
 function onPromptButtonClick(
 	selection: Selection | null,
 	promptInfo: {
+		x: number;
+		y: number;
 		onRight: boolean;
 		onTop: boolean;
 	},
@@ -147,9 +165,13 @@ function onPromptButtonClick(
 	}
 	promptButtonState.forCancellation = true;
 	setSLVariable("prompt-button-rot", promptInfo.onRight !== promptInfo.onTop ? "-45deg" : "45deg");
+	window.scrollTo({
+		top: promptInfo.y - window.innerHeight / 2,
+		behavior: "smooth",
+	});
 	showInputPrompt(promptInfo);
 }
 
-function showInputPrompt(promptInfo: { onRight: boolean; onTop: boolean }) {
+function showInputPrompt(promptInfo: { x: number; y: number; onRight: boolean; onTop: boolean }) {
 	promptInfo;
 }
