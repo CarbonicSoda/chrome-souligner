@@ -4,21 +4,21 @@
 	"description": "",
 	"version": "1.0",
 	"action": {
-		"default_popup": "popup/popup_view.html",
-		"default_title": "Souligner Explorer",
+		"default_popup": "dist/popup/popup.html",
+		"default_title": "Souligner",
 		"default_icon": {
-			"16": "popup/popup_icon.png"
+			"16": "media/popup_icon.png"
 		}
 	},
 	"host_permissions": ["http://*/*", "https://*/*"],
 	"background": {
-		"service_worker": "background/service_worker.js"
+		"service_worker": "dist/background/service_worker.js"
 	},
 	"content_scripts": [
 		{
 			"matches": ["http://*/*", "https://*/*"],
-			"js": ["content/content_script.js"],
-			"css": ["content/content_styles.css"]
+			"js": ["dist/content/content_script.js"],
+			"css": ["dist/content/content_styles.css"]
 		}
 	]
 }

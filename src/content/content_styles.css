@@ -1,12 +1,13 @@
-.slInjected {
+.sl-injected {
+	all: initial;
+
 	--bg-color: #eff1f5;
 	--shadow-color: rgba(124, 127, 147, 0.3);
 	--text-idle-color: #8c8fa1;
 	--text-active-color: #4c4f69;
 }
 
-.slInjected.slPrompt {
-	all: initial;
+.sl-injected.sl-prompt {
 	pointer-events: none;
 	box-shadow: 3px 3px var(--shadow-color);
 	position: absolute;
@@ -21,14 +22,13 @@
 	border-radius: 5px;
 }
 
-.slInjected.slPrompt.slShowPrompt {
+.sl-injected.sl-prompt.sl-prompt-show {
 	pointer-events: all;
 	opacity: 1;
 	cursor: pointer;
 }
 
-.slInjected.slPromptButton {
-	all: initial;
+.sl-injected.sl-prompt-button {
 	display: flex;
 	justify-content: center;
 	align-items: baseline;
@@ -36,7 +36,7 @@
 	height: 100%;
 }
 
-.slInjected.slPromptButton.slPromptButtonText {
+.sl-injected.sl-prompt-button-text {
 	height: 100%;
 	margin: 0;
 	transition: color 0.4s, transform 0.3s ease-out;
@@ -47,10 +47,10 @@
 	vertical-align: middle;
 }
 
-.slInjected.slPromptButton.slPromptButtonText:hover {
+.sl-injected.sl-prompt-button-text:hover {
 	color: var(--text-active-color);
 }
 
-.slInjected.slPromptButton.slCancelButton.slPromptButtonText {
+.sl-injected.sl-prompt-button-text.sl-prompt-button-for-cancellation {
 	transform: rotate(45deg);
 }
