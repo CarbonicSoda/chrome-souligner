@@ -1,6 +1,12 @@
 const prompter = injectElement("div", document.body);
+
 const promptButton = injectElement("button", prompter);
+const [promptButtonWidth, prompButtonHeight] = [40, 40];
+
 const promptButtonText = injectElement("p", promptButton);
+
+const inputPrompt = injectElement("div", prompter);
+const [inputPromptWidth, inputPromptHeight] = [356, 200];
 
 (function main(): void {
 	buildPrompter();
@@ -20,7 +26,7 @@ const promptButtonText = injectElement("p", promptButton);
 
 		const selectionIdleThreshold = 200;
 		global.selectionChangeAbort = new AbortController();
-		const selectionIdle = await new Promise<boolean>((res) => {
+		const selectionIdle = await new Promise((res) => {
 			global.selectionIdleTimeout = setTimeout(() => {
 				res(true);
 				global.selectionChangeAbort.abort("selectionIdle");
@@ -52,19 +58,6 @@ const promptButtonText = injectElement("p", promptButton);
 	});
 })();
 
-function injectElement<T extends keyof HTMLElementTagNameMap>(
-	tagName: T,
-	parent: ParentNode,
-): HTMLElementTagNameMap[T] {
-	const element = document.createElement(tagName);
-	element.className = "sl-injected";
-	return parent.appendChild(element);
-}
-
-function setSLVariable(varName: string, value: any): void {
-	document.documentElement.style.setProperty(`--sl-${varName}`, String(value));
-}
-
 function buildPrompter(): void {
 	prompter.classList.add("sl-prompt");
 
@@ -72,18 +65,21 @@ function buildPrompter(): void {
 
 	promptButtonText.classList.add("sl-prompt-button-text");
 	promptButtonText.innerText = "+";
+
+	inputPrompt.classList.add("sl-input-prompt");
 }
 
 async function resetPrompter(): Promise<void> {
 	prompter.classList.remove("sl-prompt-show");
+	inputPrompt.classList.remove("sl-input-prompt-show");
 	setSLVariable("prompt-button-text-rot", 0);
 
-	const transitions = [prompter, promptButtonText].map(
+	const transitions = [prompter, promptButtonText, inputPrompt].map(
 		(element) => new Promise((res) => element.addEventListener("transitioned", res, { once: true })),
 	);
 	await Promise.all(transitions);
 
-	setSLVariable("prompt-translate", "0 0");
+	setSLVariable("prompt-translate", "0, 0");
 }
 
 async function showPrompter(selection: Selection | null): Promise<
@@ -135,22 +131,21 @@ async function showPrompter(selection: Selection | null): Promise<
 	const buttonOnRight = x > window.innerWidth / 2;
 	const buttonOnTop = y < anchorY;
 
-	const promptButtonRect = promptButton.getBoundingClientRect();
-	y += buttonOnTop ? -promptButtonRect.height - 20 : 50;
+	y += buttonOnTop ? -50 - prompButtonHeight / 2 : 50;
 
 	const marginX = window.innerWidth * 0.05;
-	const marginY = window.innerHeight * 0.05;
+	const marginY = window.innerHeight * 0.2;
 	const leftBound = window.scrollX + marginX;
 	const topBound = window.scrollY + marginY;
-	const rightBound = window.scrollX + window.innerWidth - marginX - promptButtonRect.width;
-	const bottomBound = window.scrollY + window.innerHeight - marginY - promptButtonRect.height;
+	const rightBound = window.scrollX + window.innerWidth - marginX - promptButtonWidth;
+	const bottomBound = window.scrollY + window.innerHeight - marginY - prompButtonHeight;
 
 	if (x < leftBound) x = leftBound;
 	if (y < topBound) y = topBound;
 	if (x > rightBound) x = rightBound;
 	if (y > bottomBound) y = bottomBound;
 
-	setSLVariable("prompt-translate", `${x}px ${y}px`);
+	setSLVariable("prompt-translate", `${x}px, ${y}px`);
 	prompter.classList.add("sl-prompt-show");
 
 	return {
@@ -176,7 +171,7 @@ function onPromptButtonClick(
 	},
 ): void {
 	if (globalInfo.buttonAbortable) {
-		globalInfo.buttonClickAbort.abort("userAbortPrompt");
+		globalInfo.buttonClickAbort.abort("promptAbortedByUser");
 		selection.empty();
 		resetPrompter();
 		return;
@@ -186,6 +181,30 @@ function onPromptButtonClick(
 	showInputPrompt(promptInfo);
 }
 
-function showInputPrompt(promptInfo: { x: number; y: number; onRight: boolean; onTop: boolean }) {
-	promptInfo;
+function showInputPrompt(promptInfo: { onRight: boolean; onTop: boolean; [other: string]: any }): void {
+	const padding = 15;
+	const offsetX = promptInfo.onRight ? -inputPromptWidth - padding : promptButtonWidth + padding;
+	const offsetY = promptInfo.onTop ? -inputPromptHeight + prompButtonHeight : 0;
+	setSLVariable("input-prompt-translate", `${offsetX}px ${offsetY}px`);
+	setSLVariable(
+		"input-prompt-transform-pivot",
+		`${promptInfo.onTop ? "bottom" : "top"} ${promptInfo.onRight ? "right" : "left"}`,
+	);
+	inputPrompt.classList.add("sl-input-prompt-show");
 }
+
+// Auxiliary Start
+function injectElement<T extends keyof HTMLElementTagNameMap>(
+	tagName: T,
+	parent: ParentNode,
+): HTMLElementTagNameMap[T] {
+	const element = document.createElement(tagName);
+	element.className = "sl-injected";
+	return parent.appendChild(element);
+}
+
+function setSLVariable(varName: string, value: any): void {
+	document.documentElement.style.setProperty(`--sl-${varName}`, String(value));
+}
+
+// Auxiliary End
