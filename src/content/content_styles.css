@@ -42,6 +42,7 @@
 }
 
 .sl-injected.sl-prompt-button-text {
+	user-select: none;
 	transform: rotate(var(--sl-prompt-button-text-rot));
 	height: 100%;
 	margin: 0;
