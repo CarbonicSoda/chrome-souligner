@@ -15,11 +15,13 @@ const [inputPromptWidth, inputPromptHeight] = [356, 200];
 		buttonAbortable: false,
 		buttonClickAbort: new AbortController(),
 
+		selectionChangeResolve: (selectionIdle: boolean) => {},
 		selectionChangeAbort: new AbortController(),
 		selectionIdleTimeout: <NodeJS.Timeout>(<unknown>-1),
 	};
 	document.addEventListener("selectionchange", async () => {
 		global.buttonClickAbort.abort("removeOldListener");
+		global.selectionChangeResolve(false);
 		global.selectionChangeAbort.abort("removeOldListener");
 		clearTimeout(global.selectionIdleTimeout);
 		resetPrompter();
@@ -27,6 +29,7 @@ const [inputPromptWidth, inputPromptHeight] = [356, 200];
 		const selectionIdleThreshold = 200;
 		global.selectionChangeAbort = new AbortController();
 		const selectionIdle = await new Promise((res) => {
+			global.selectionChangeResolve = res;
 			global.selectionIdleTimeout = setTimeout(() => {
 				res(true);
 				global.selectionChangeAbort.abort("selectionIdle");
