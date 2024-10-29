@@ -176,7 +176,6 @@ function onPromptButtonClick(
 		return;
 	}
 	globalInfo.buttonAbortable = true;
-	//MO FIX rotation wrong
 	setSLVariable("prompt-button-rot", promptInfo.onRight === promptInfo.onTop ? "45deg" : "-45deg");
 	showInputPrompt(promptInfo);
 }
