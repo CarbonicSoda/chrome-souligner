@@ -23,7 +23,7 @@
 	transform: translate(var(--sl-prompt-translate));
 	width: 40px;
 	height: 40px;
-	transition: opacity 0.2s ease-out;
+	transition: opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 	background-color: var(--sl-bg);
 	border-radius: 5px;
 }
@@ -68,7 +68,7 @@
 	transform: scale(0);
 	width: 356px;
 	height: 200px;
-	transition: transform 0.3s;
+	transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 	background-color: var(--sl-bg);
 	border-radius: 5px;
 }
