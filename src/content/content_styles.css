@@ -5,11 +5,7 @@
     --sl-text-active: #4c4f69;
     --sl-prompt-translate: 0 0;
     --sl-prompt-button-rot: 0;
-    --sl-prompt-input-box-transform-pivot: top left;
-}
-
-.no-transition {
-    transition: none !important;
+    /* --sl-prompt-input-box-transform-pivot: top left; */;
 }
 
 .sl-injected {
@@ -17,7 +13,6 @@
 }
 
 .sl-injected.sl-prompt {
-    pointer-events: none;
     box-shadow: 3px 3px var(--sl-shadow);
     translate: var(--sl-prompt-translate);
     position: absolute;
@@ -27,13 +22,12 @@
     opacity: 0;
     width: 40px;
     height: 40px;
-    transition: translate 0.2s ease-out, opacity 0.3s ease-out;
+    transition: opacity 0.3s ease-out;
     background-color: var(--sl-bg);
     border-radius: 5px;
 }
 
 .sl-injected.sl-prompt.sl-prompt-show {
-    pointer-events: all;
     opacity: 1;
     cursor: pointer;
 }
@@ -44,13 +38,15 @@
     align-items: baseline;
     width: 100%;
     height: 100%;
+    cursor: inherit;
 }
 
 .sl-injected.sl-prompt-button-text {
     transform: rotate(var(--sl-prompt-button-rot));
     height: 100%;
     margin: 0;
-    transition: color 0.4s, transform 0.3s ease-out;
+    transition: color 0.3s, transform 0.3s ease-out;
+    cursor: inherit;
     font: normal normal 35px Georgia;
     line-height: 98%;
     color: var(--sl-text-idle);
@@ -58,7 +54,7 @@
     vertical-align: middle;
 }
 
-.sl-injected.sl-prompt-button-text:hover {
+.sl-injected.sl-prompt-button:hover .sl-prompt-button-text {
     color: var(--sl-text-active);
 }
 

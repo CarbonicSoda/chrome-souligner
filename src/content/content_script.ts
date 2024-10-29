@@ -5,21 +5,36 @@ const promptButtonText = injectElement("p", promptButton);
 (function main(): void {
 	buildPrompter();
 
-	const promptButtonState = {
-		forCancellation: false,
-		aborter: new AbortController(),
+	const global = {
+		buttonAbortable: false,
+		buttonClickAbort: new AbortController(),
+
+		selectionChangeAbort: new AbortController(),
+		selectionIdleTimeout: <NodeJS.Timeout>(<unknown>-1),
 	};
 	document.addEventListener("selectionchange", async () => {
-		if (!promptButtonState.aborter.signal.aborted) promptButtonState.aborter.abort();
-
+		global.buttonClickAbort.abort("removeOldListener");
+		global.selectionChangeAbort.abort("removeOldListener");
+		clearTimeout(global.selectionIdleTimeout);
 		resetPrompter();
-		if (!elementInViewport(prompter)) {
-			prompter.classList.add("no-transition");
-			setSLVariable("prompt-x", `${window.scrollX + window.innerWidth / 2}px`);
-			setSLVariable("prompt-y", `${window.scrollY + window.innerHeight / 2}px`);
-			prompter.offsetHeight; // force browser CSS reflow
-			prompter.classList.remove("no-transition");
-		}
+
+		const selectionIdleThreshold = 200;
+		global.selectionChangeAbort = new AbortController();
+		const selectionIdle = await new Promise<boolean>((res) => {
+			global.selectionIdleTimeout = setTimeout(() => {
+				res(true);
+				global.selectionChangeAbort.abort("selectionIdle");
+			}, selectionIdleThreshold);
+			document.addEventListener(
+				"selectionchange",
+				() => {
+					res(false);
+					clearTimeout(global.selectionIdleTimeout);
+				},
+				{ once: true, signal: global.selectionChangeAbort.signal },
+			);
+		});
+		if (!selectionIdle) return;
 
 		const selection = window.getSelection();
 		const promptInfo = await showPrompter(selection);
@@ -28,10 +43,11 @@ const promptButtonText = injectElement("p", promptButton);
 			return;
 		}
 
-		promptButtonState.forCancellation = false;
-		promptButtonState.aborter = new AbortController();
-		promptButton.addEventListener("click", () => onPromptButtonClick(selection, promptInfo, promptButtonState), {
-			signal: promptButtonState.aborter.signal,
+		global.buttonAbortable = false;
+		global.buttonClickAbort.abort("removeOldListener");
+		global.buttonClickAbort = new AbortController();
+		promptButton.addEventListener("click", () => onPromptButtonClick(selection, promptInfo, global), {
+			signal: global.buttonClickAbort.signal,
 		});
 	});
 })();
@@ -49,11 +65,6 @@ function setSLVariable(varName: string, value: any): void {
 	document.documentElement.style.setProperty(`--sl-${varName}`, String(value));
 }
 
-function elementInViewport(element: Element): boolean {
-	const rect = element.getBoundingClientRect();
-	return rect.right >= 0 && rect.bottom >= 0 && rect.left <= window.innerWidth && rect.top <= window.innerHeight;
-}
-
 function buildPrompter(): void {
 	prompter.classList.add("sl-prompt");
 
@@ -65,6 +76,7 @@ function buildPrompter(): void {
 
 function resetPrompter(): void {
 	prompter.classList.remove("sl-prompt-show");
+	setSLVariable("prompt-translate", "0 0");
 	setSLVariable("prompt-button-rot", 0);
 }
 
@@ -77,11 +89,7 @@ async function showPrompter(selection: Selection | null): Promise<
 	  }
 	| undefined
 > {
-	if (!selection || selection.isCollapsed) {
-		prompter.classList.remove("sl-prompt-show");
-		return;
-	}
-	prompter.classList.add("sl-prompt-show");
+	if (!selection || selection.isCollapsed) return;
 
 	const focusNode = selection.focusNode;
 	const focusOffset = selection.focusOffset;
@@ -124,19 +132,20 @@ async function showPrompter(selection: Selection | null): Promise<
 	const promptButtonRect = promptButton.getBoundingClientRect();
 	y += buttonOnTop ? -promptButtonRect.height - 20 : 50;
 
-	const marginX = window.innerWidth * 0.15;
-	const marginY = window.innerHeight * 0.15;
+	const marginX = window.innerWidth * 0.05;
+	const marginY = window.innerHeight * 0.05;
 	const leftBound = window.scrollX + marginX;
-	const rightBound = window.scrollX + window.innerWidth - marginX;
-	const bottomBound = window.scrollY + window.innerHeight - marginY;
 	const topBound = window.scrollY + marginY;
+	const rightBound = window.scrollX + window.innerWidth - marginX - promptButtonRect.width;
+	const bottomBound = window.scrollY + window.innerHeight - marginY - promptButtonRect.height;
 
 	if (x < leftBound) x = leftBound;
+	if (y < topBound) y = topBound;
 	if (x > rightBound) x = rightBound;
 	if (y > bottomBound) y = bottomBound;
-	if (y < topBound) y = topBound;
 
 	setSLVariable("prompt-translate", `${x}px ${y}px`);
+	prompter.classList.add("sl-prompt-show");
 
 	return {
 		x: x,
@@ -154,19 +163,20 @@ function onPromptButtonClick(
 		onRight: boolean;
 		onTop: boolean;
 	},
-	promptButtonState: {
-		forCancellation: boolean;
-		aborter: AbortController;
+	globalInfo: {
+		buttonAbortable: boolean;
+		buttonClickAbort: AbortController;
+		[other: string]: any;
 	},
 ): void {
-	if (promptButtonState.forCancellation) {
-		promptButtonState.forCancellation = false;
-		promptButtonState.aborter.abort();
+	if (globalInfo.buttonAbortable) {
+		globalInfo.buttonClickAbort.abort("userAbortPrompt");
 		selection.empty();
 		resetPrompter();
 		return;
 	}
-	promptButtonState.forCancellation = true;
+	globalInfo.buttonAbortable = true;
+	//MO FIX rotation wrong
 	setSLVariable("prompt-button-rot", promptInfo.onRight === promptInfo.onTop ? "45deg" : "-45deg");
 	showInputPrompt(promptInfo);
 }

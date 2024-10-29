@@ -12,7 +12,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 /** @type WebpackConfig */
 const config = {
-	mode: "production",
+	mode: "none",
 	entry: {
 		"background/service_worker": path.resolve(__dirname, "src", "background", "service_worker.ts"),
 		"content/content_script": path.resolve(__dirname, "src", "content", "content_script.ts"),
