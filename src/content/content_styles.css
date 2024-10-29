@@ -4,7 +4,7 @@
     --sl-text-idle: #8c8fa1;
     --sl-text-active: #4c4f69;
     --sl-prompt-translate: 0 0;
-    --sl-prompt-button-rot: 0;
+    --sl-prompt-button-text-rot: 0;
     /* --sl-prompt-input-box-transform-pivot: top left; */;
 }
 
@@ -22,7 +22,7 @@
     opacity: 0;
     width: 40px;
     height: 40px;
-    transition: opacity 0.3s ease-out;
+    transition: opacity 0.2s ease-out;
     background-color: var(--sl-bg);
     border-radius: 5px;
 }
@@ -42,7 +42,7 @@
 }
 
 .sl-injected.sl-prompt-button-text {
-    transform: rotate(var(--sl-prompt-button-rot));
+    transform: rotate(var(--sl-prompt-button-text-rot));
     height: 100%;
     margin: 0;
     transition: color 0.3s, transform 0.3s ease-out;

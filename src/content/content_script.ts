@@ -74,10 +74,16 @@ function buildPrompter(): void {
 	promptButtonText.innerText = "+";
 }
 
-function resetPrompter(): void {
+async function resetPrompter(): Promise<void> {
 	prompter.classList.remove("sl-prompt-show");
+	setSLVariable("prompt-button-text-rot", 0);
+
+	const transitions = [prompter, promptButtonText].map(
+		(element) => new Promise((res) => element.addEventListener("transitioned", res, { once: true })),
+	);
+	await Promise.all(transitions);
+
 	setSLVariable("prompt-translate", "0 0");
-	setSLVariable("prompt-button-rot", 0);
 }
 
 async function showPrompter(selection: Selection | null): Promise<
@@ -176,7 +182,7 @@ function onPromptButtonClick(
 		return;
 	}
 	globalInfo.buttonAbortable = true;
-	setSLVariable("prompt-button-rot", promptInfo.onRight === promptInfo.onTop ? "45deg" : "-45deg");
+	setSLVariable("prompt-button-text-rot", promptInfo.onRight === promptInfo.onTop ? "45deg" : "-45deg");
 	showInputPrompt(promptInfo);
 }
 
