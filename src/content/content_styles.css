@@ -1,63 +1,66 @@
 :root {
-	--sl-bg: #eff1f5;
-	--sl-shadow: rgba(124, 127, 147, 0.3);
-	--sl-text-idle: #8c8fa1;
-	--sl-text-active: #4c4f69;
-	--sl-prompt-x: 0;
-	--sl-prompt-y: 0;
-	--sl-prompt-button-rot: 0;
+    --sl-bg: #eff1f5;
+    --sl-shadow: rgba(124, 127, 147, 0.3);
+    --sl-text-idle: #8c8fa1;
+    --sl-text-active: #4c4f69;
+    --sl-prompt-translate: 0 0;
+    --sl-prompt-button-rot: 0;
+    --sl-prompt-input-box-transform-pivot: top left;
 }
 
 .no-transition {
-	transition: none !important;
+    transition: none !important;
 }
 
 .sl-injected {
-	all: initial;
+    all: initial;
 }
 
 .sl-injected.sl-prompt {
-	pointer-events: none;
-	box-shadow: 3px 3px var(--sl-shadow);
-	translate: var(--sl-prompt-x) var(--sl-prompt-y);
-	position: absolute;
-	z-index: 9999;
-	top: 0;
-	left: 0;
-	opacity: 0;
-	width: 40px;
-	height: 40px;
-	transition: translate 0.2s ease-out, opacity 0.3s ease-out;
-	background-color: var(--sl-bg);
-	border-radius: 5px;
+    pointer-events: none;
+    box-shadow: 3px 3px var(--sl-shadow);
+    translate: var(--sl-prompt-translate);
+    position: absolute;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    width: 40px;
+    height: 40px;
+    transition: translate 0.2s ease-out, opacity 0.3s ease-out;
+    background-color: var(--sl-bg);
+    border-radius: 5px;
 }
 
 .sl-injected.sl-prompt.sl-prompt-show {
-	pointer-events: all;
-	opacity: 1;
-	cursor: pointer;
+    pointer-events: all;
+    opacity: 1;
+    cursor: pointer;
 }
 
 .sl-injected.sl-prompt-button {
-	display: flex;
-	justify-content: center;
-	align-items: baseline;
-	width: 100%;
-	height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    width: 100%;
+    height: 100%;
 }
 
 .sl-injected.sl-prompt-button-text {
-	transform: rotate(var(--sl-prompt-button-rot));
-	height: 100%;
-	margin: 0;
-	transition: color 0.4s, transform 0.3s ease-out;
-	font: normal normal 35px Georgia;
-	line-height: 98%;
-	color: var(--sl-text-idle);
-	text-align: center;
-	vertical-align: middle;
+    transform: rotate(var(--sl-prompt-button-rot));
+    height: 100%;
+    margin: 0;
+    transition: color 0.4s, transform 0.3s ease-out;
+    font: normal normal 35px Georgia;
+    line-height: 98%;
+    color: var(--sl-text-idle);
+    text-align: center;
+    vertical-align: middle;
 }
 
 .sl-injected.sl-prompt-button-text:hover {
-	color: var(--sl-text-active);
+    color: var(--sl-text-active);
+}
+
+.sl-injected.sl-prompt-input-box {
 }

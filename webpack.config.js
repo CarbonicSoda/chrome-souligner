@@ -56,11 +56,10 @@ const config = {
 			],
 		}),
 	],
-	optimization: {
-		minimize: true,
-		minimizer: [new HtmlMinimizerPlugin(), new CssMinimizerPlugin()],
-		// minimizer: [new HtmlMinimizerPlugin(), new CssMinimizerPlugin(), new TerserPlugin()],
-	},
+	// optimization: {
+	// 	minimize: true,
+	// 	minimizer: [new HtmlMinimizerPlugin(), new CssMinimizerPlugin(), new TerserPlugin()],
+	// },
 };
 
 module.exports = config;

@@ -23,8 +23,12 @@ const promptButtonText = injectElement("p", promptButton);
 
 		const selection = window.getSelection();
 		const promptInfo = await showPrompter(selection);
-		if (!promptInfo) return;
+		if (!promptInfo) {
+			resetPrompter();
+			return;
+		}
 
+		promptButtonState.forCancellation = false;
 		promptButtonState.aborter = new AbortController();
 		promptButton.addEventListener("click", () => onPromptButtonClick(selection, promptInfo, promptButtonState), {
 			signal: promptButtonState.aborter.signal,
@@ -132,8 +136,7 @@ async function showPrompter(selection: Selection | null): Promise<
 	if (y > bottomBound) y = bottomBound;
 	if (y < topBound) y = topBound;
 
-	setSLVariable("prompt-x", `${x}px`);
-	setSLVariable("prompt-y", `${y}px`);
+	setSLVariable("prompt-translate", `${x}px ${y}px`);
 
 	return {
 		x: x,
@@ -164,11 +167,7 @@ function onPromptButtonClick(
 		return;
 	}
 	promptButtonState.forCancellation = true;
-	setSLVariable("prompt-button-rot", promptInfo.onRight !== promptInfo.onTop ? "-45deg" : "45deg");
-	window.scrollTo({
-		top: promptInfo.y - window.innerHeight / 2,
-		behavior: "smooth",
-	});
+	setSLVariable("prompt-button-rot", promptInfo.onRight === promptInfo.onTop ? "45deg" : "-45deg");
 	showInputPrompt(promptInfo);
 }
 
