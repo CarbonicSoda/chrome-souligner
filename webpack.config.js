@@ -3,63 +3,69 @@
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
 
 const path = require("path");
-const CopyPlugin = require("copy-webpack-plugin");
-const HtmlMinimizerPlugin = require("html-minimizer-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+
+const PATH_SRC = path.resolve(__dirname, "src");
+const PATH_DIST = path.resolve(__dirname, "dist");
 
 /** @type WebpackConfig */
-const config = {
-	mode: "none",
+module.exports = {
+	mode: "production",
 	entry: {
-		"background/service_worker": path.resolve(__dirname, "src", "background", "service_worker.ts"),
-		"content/content_script": path.resolve(__dirname, "src", "content", "content_script.ts"),
-		"popup/popup": path.resolve(__dirname, "src", "popup", "popup.ts"),
+		"background/service_worker": path.resolve(PATH_SRC, "background", "service_worker.ts"),
+		"content/content": path.resolve(PATH_SRC, "content", "content.ts"),
+		"popup/popup": path.resolve(PATH_SRC, "popup", "popup.ts"),
 	},
 	output: {
-		path: path.resolve(__dirname, "dist"),
+		path: PATH_DIST,
 		filename: "[name].js",
+		clean: true,
 	},
 	resolve: {
-		extensions: [".ts", ".js"],
+		extensions: [".ts", ".js", ".css", ".scss"],
 	},
 	module: {
 		rules: [
 			{
-				test: /\.html$/,
-				type: "asset/resource",
-			},
-			{
-				test: /\.css$/,
-				use: [MiniCssExtractPlugin.loader, "css-loader"],
+				test: /\.scss$/,
+				use: [
+					MiniCssExtractPlugin.loader,
+					"css-loader",
+					{
+						loader: "sass-loader",
+						options: {
+							sourceMap: true,
+							sassOptions: {
+								outputStyle: "compressed",
+							},
+						},
+					},
+				],
 			},
 			{
 				test: /\.ts$/,
 				exclude: /node_modules/,
-				use: [
-					{
-						loader: "ts-loader",
-					},
-				],
+				loader: "ts-loader",
 			},
 		],
 	},
 	plugins: [
-		new CleanWebpackPlugin(),
-		new CopyPlugin({
-			patterns: [
-				{ from: "**/src/content/*.css", to: "content/[name][ext]" },
-				{ from: "**/src/popup/*.html", to: "popup/[name][ext]" },
-				{ from: "**/src/popup/*.css", to: "popup/[name][ext]" },
-			],
+		new HtmlWebpackPlugin({
+			filename: "popup/popup.html",
+			template: "src/popup/popup.html",
+			chunks: ["popup"],
+		}),
+		new MiniCssExtractPlugin({
+			filename: "[name].css",
+			chunkFilename: "[id].css",
 		}),
 	],
-	// optimization: {
-	// 	minimize: true,
-	// 	minimizer: [new HtmlMinimizerPlugin(), new CssMinimizerPlugin(), new TerserPlugin()],
-	// },
+	//MO DEV
+	devtool: "inline-source-map",
+	optimization: {
+		minimize: true,
+		minimizer: [new TerserPlugin()],
+	},
 };
-
-module.exports = config;

@@ -1,25 +1,29 @@
-const prompter = injectElement("div", document.body);
+import "./content.scss";
 
-const promptButton = injectElement("button", prompter);
+const prompter = injectElement("div", document.body, "prompt");
+
+const promptButton = injectElement("button", prompter, "button");
 const [promptButtonWidth, prompButtonHeight] = [40, 40];
 
-const promptButtonText = injectElement("p", promptButton);
+// const promptButtonText = injectElement("p", promptButton, "");
 
-const inputPrompt = injectElement("div", prompter);
-const [inputPromptWidth, inputPromptHeight] = [356, 200];
+const notePrompt = injectElement("div", prompter, "note-prompt");
+const [notePromptWidth, notePromptHeight] = [356, 200];
+
+const notePromptTextArea = injectElement("textarea", notePrompt, "note-prompt-textarea");
 
 (function main(): void {
-	buildPrompter();
-
 	const global = {
 		buttonAbortable: false,
 		buttonClickAbort: new AbortController(),
 
-		selectionChangeResolve: (selectionIdle: boolean) => {},
+		selectionChangeResolve: (_selectionIdle: boolean) => {},
 		selectionChangeAbort: new AbortController(),
 		selectionIdleTimeout: <NodeJS.Timeout>(<unknown>-1),
 	};
 	document.addEventListener("selectionchange", async () => {
+		if (notePromptTextArea === document.activeElement) return;
+
 		global.buttonClickAbort.abort("removeOldListener");
 		global.selectionChangeResolve(false);
 		global.selectionChangeAbort.abort("removeOldListener");
@@ -61,34 +65,18 @@ const [inputPromptWidth, inputPromptHeight] = [356, 200];
 	});
 })();
 
-function buildPrompter(): void {
-	prompter.classList.add("sl-prompt");
-
-	promptButton.classList.add("sl-prompt-button");
-
-	promptButtonText.classList.add("sl-prompt-button-text");
-	promptButtonText.innerText = "+";
-
-	inputPrompt.classList.add("sl-input-prompt");
-}
-
 async function resetPrompter(): Promise<void> {
-	prompter.classList.remove("sl-prompt-show");
-	inputPrompt.classList.remove("sl-input-prompt-show");
-	setSLVariable("prompt-button-text-rot", 0);
+	removeClass(prompter, "prompt-show");
+	removeClass(notePrompt, "note-prompt-show");
+	setVariable("button-icon-rot", 0);
 
-	const transitions = [prompter, promptButtonText, inputPrompt].map(
-		(element) => new Promise((res) => element.addEventListener("transitioned", res, { once: true })),
-	);
-	await Promise.all(transitions);
+	await new Promise((res) => prompter.addEventListener("transitioned", res, { once: true }));
 
-	setSLVariable("prompt-translate", "0, 0");
+	setVariable("prompt-translate", "0 0");
 }
 
 async function showPrompter(selection: Selection | null): Promise<
 	| {
-			x: number;
-			y: number;
 			onRight: boolean;
 			onTop: boolean;
 	  }
@@ -148,12 +136,10 @@ async function showPrompter(selection: Selection | null): Promise<
 	if (x > rightBound) x = rightBound;
 	if (y > bottomBound) y = bottomBound;
 
-	setSLVariable("prompt-translate", `${x}px, ${y}px`);
-	prompter.classList.add("sl-prompt-show");
+	setVariable("prompt-translate", `${x}px ${y}px`);
+	addClass(prompter, "prompt-show");
 
 	return {
-		x: x,
-		y: y,
 		onRight: buttonOnRight,
 		onTop: buttonOnTop,
 	};
@@ -162,8 +148,6 @@ async function showPrompter(selection: Selection | null): Promise<
 function onPromptButtonClick(
 	selection: Selection | null,
 	promptInfo: {
-		x: number;
-		y: number;
 		onRight: boolean;
 		onTop: boolean;
 	},
@@ -180,33 +164,45 @@ function onPromptButtonClick(
 		return;
 	}
 	globalInfo.buttonAbortable = true;
-	setSLVariable("prompt-button-text-rot", promptInfo.onRight === promptInfo.onTop ? "45deg" : "-45deg");
+	setVariable("button-icon-rot", promptInfo.onRight === promptInfo.onTop ? "45deg" : "-45deg");
 	showInputPrompt(promptInfo);
 }
 
-function showInputPrompt(promptInfo: { onRight: boolean; onTop: boolean; [other: string]: any }): void {
+//MO TODO shall show Tag Picker first, and transit to this details prompt
+//MO TODO textarea will be aligned on top and confirm button on bottom
+//MO TODO a placeholder pseudo will be in the textarea first then move to title pos
+function showInputPrompt(promptInfo: { onRight: boolean; onTop: boolean }): void {
 	const padding = 15;
-	const offsetX = promptInfo.onRight ? -inputPromptWidth - padding : promptButtonWidth + padding;
-	const offsetY = promptInfo.onTop ? -inputPromptHeight + prompButtonHeight : 0;
-	setSLVariable("input-prompt-translate", `${offsetX}px ${offsetY}px`);
-	setSLVariable(
-		"input-prompt-transform-pivot",
+	const offsetX = promptInfo.onRight ? -notePromptWidth - padding : promptButtonWidth + padding;
+	const offsetY = promptInfo.onTop ? -notePromptHeight + prompButtonHeight : 0;
+	setVariable("note-prompt-translate", `${offsetX}px ${offsetY}px`);
+	setVariable(
+		"note-prompt-transform-origin",
 		`${promptInfo.onTop ? "bottom" : "top"} ${promptInfo.onRight ? "right" : "left"}`,
 	);
-	inputPrompt.classList.add("sl-input-prompt-show");
+	addClass(notePrompt, "note-prompt-show");
 }
 
 // Auxiliary Start
 function injectElement<T extends keyof HTMLElementTagNameMap>(
 	tagName: T,
 	parent: ParentNode,
+	className: string,
 ): HTMLElementTagNameMap[T] {
 	const element = document.createElement(tagName);
-	element.className = "sl-injected";
+	addClass(element, "injected", className);
 	return parent.appendChild(element);
 }
 
-function setSLVariable(varName: string, value: any): void {
+function addClass(element: Element, ...classNames: string[]): void {
+	element.classList.add(...classNames.map((cls) => `sl-${cls}`));
+}
+
+function removeClass(element: Element, ...classNames: string[]): void {
+	element.classList.remove(...classNames.map((cls) => `sl-${cls}`));
+}
+
+function setVariable(varName: string, value: any): void {
 	document.documentElement.style.setProperty(`--sl-${varName}`, String(value));
 }
 

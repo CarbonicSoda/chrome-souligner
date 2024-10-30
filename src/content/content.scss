@@ -1,0 +1,100 @@
+$bg-primary: #eff1f5;
+$bg-secondary: #f4f7ff;
+$text-idle: #8c8fa1;
+$text-hover: #4c4f69;
+$shadow: rgba(124, 127, 147, 0.3);
+$border-radius: 5px;
+$default-ease: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+//MO TODO try to rewrite with SolidJS and SCSS later
+:root {
+	--sl-prompt-translate: 0 0;
+	--sl-button-icon-rot: 0;
+	--sl-note-prompt-translate: 0 0;
+	--sl-note-prompt-transform-origin: top left;
+}
+
+.sl-injected {
+	all: initial;
+	box-sizing: border-box;
+	&.sl-prompt {
+		box-shadow: 3px 3px $shadow;
+		translate: var(--sl-prompt-translate);
+		position: absolute;
+		z-index: 999;
+		top: 0;
+		left: 0;
+		opacity: 0;
+		width: 40px;
+		height: 40px;
+		transition: opacity $default-ease;
+		background-color: $bg-primary;
+		border-radius: $border-radius;
+		&.sl-prompt-show {
+			opacity: 1;
+			cursor: pointer;
+		}
+		.sl-button {
+			display: flex;
+			justify-content: center;
+			width: 100%;
+			height: 100%;
+			cursor: inherit;
+			&::after {
+				user-select: none;
+				rotate: var(--sl-button-icon-rot);
+				content: "+";
+				height: 100%;
+				transition: color $default-ease, rotate $default-ease;
+				cursor: inherit;
+				font: normal normal 35px Georgia;
+				line-height: 100%;
+				color: $text-idle;
+				text-align: center;
+				vertical-align: middle;
+			}
+			&:hover::after {
+				color: $text-hover;
+			}
+		}
+		.sl-note-prompt {
+			box-shadow: 3px 3px $shadow;
+			translate: var(--sl-note-prompt-translate);
+			transform-origin: var(--sl-note-prompt-transform-origin);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			position: absolute;
+			top: 0;
+			left: 0;
+			transform: scale(0);
+			overflow: visible;
+			width: 356px;
+			height: 200px;
+			transition: transform $default-ease, box-shadow $default-ease;
+			background-color: $bg-primary;
+			border-radius: $border-radius;
+			&.sl-note-prompt-show {
+				transform: none;
+			}
+			.sl-note-prompt-textarea {
+				transform-origin: center center;
+				width: 90%;
+				height: 70%;
+				transition: box-shadow $default-ease, transform $default-ease;
+				background-color: $bg-secondary;
+				border-radius: $border-radius;
+				&:hover:not(:focus) {
+					box-shadow: 0 0 80px 30px $shadow;
+					transform: scale(1.05);
+				}
+				&:focus {
+					box-shadow: 0 0 40px $shadow;
+				}
+			}
+			&:has(.sl-note-prompt-textarea:hover, .sl-note-prompt-textarea:focus) {
+				box-shadow: none;
+			}
+		}
+	}
+}
