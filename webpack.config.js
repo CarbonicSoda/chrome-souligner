@@ -12,11 +12,13 @@ const PATH_DIST = path.resolve(__dirname, "dist");
 
 /** @type WebpackConfig */
 module.exports = {
-	mode: "production",
+	// mode: "production",
+	//MO DEV
+	mode: "none",
 	entry: {
-		"background/service_worker": path.resolve(PATH_SRC, "background", "service_worker.ts"),
-		"content/content": path.resolve(PATH_SRC, "content", "content.ts"),
-		"popup/popup": path.resolve(PATH_SRC, "popup", "popup.ts"),
+		"background/service_worker": path.resolve(PATH_SRC, "background", "service_worker.jsx"),
+		"content/content": path.resolve(PATH_SRC, "content", "content.jsx"),
+		"popup/popup": path.resolve(PATH_SRC, "popup", "popup.jsx"),
 	},
 	output: {
 		path: PATH_DIST,
@@ -24,7 +26,7 @@ module.exports = {
 		clean: true,
 	},
 	resolve: {
-		extensions: [".ts", ".js", ".css", ".scss"],
+		extensions: [".js", ".jsx", ".css", ".scss"],
 	},
 	module: {
 		rules: [
@@ -45,9 +47,9 @@ module.exports = {
 				],
 			},
 			{
-				test: /\.ts$/,
+				test: /\.jsx$/,
 				exclude: /node_modules/,
-				loader: "ts-loader",
+				loader: "babel-loader",
 			},
 		],
 	},
@@ -62,10 +64,8 @@ module.exports = {
 			chunkFilename: "[id].css",
 		}),
 	],
-	//MO DEV
-	devtool: "inline-source-map",
-	optimization: {
-		minimize: true,
-		minimizer: [new TerserPlugin()],
-	},
+	// optimization: {
+	// minimize: true,
+	// 	minimizer: [new TerserPlugin()],
+	// },
 };
